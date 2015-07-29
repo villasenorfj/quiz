@@ -77,7 +77,8 @@ exports.create = function(req, res, next) {
         quiz
         .save({fields: ["pregunta", "respuesta"]})
         .then(
-          function(){
+          function(data){
+            //console.log(data);
             res.redirect('/quizes');  // res.redirect: Redirección HTTP a lista de preguntas
           },
           function(err) {
@@ -113,7 +114,8 @@ exports.update = function(req, res, next) {
         req.quiz     // save: guarda campos pregunta y respuesta en DB
         .save( {fields: ["pregunta", "respuesta"]})
         .then( 
-          function(){ 
+          function(data){
+            //console.log(data);
             res.redirect('/quizes'); // Redirección HTTP a lista de preguntas (URL relativo)
           },
           function(err) {
@@ -125,4 +127,20 @@ exports.update = function(req, res, next) {
     }
   )
   .catch(function(error) { next(error);});
+};
+
+// DELETE /quizes/:id
+exports.destroy = function(req, res, next) {
+  req.quiz
+  .destroy()
+  .then(
+    function(data) {
+      //console.log(data);
+      res.redirect('/quizes');
+    },
+    function(err) {
+     console.log('Error destroy '+err);
+     next(err);
+    }
+  ).catch(function(error){next(error)});
 };
