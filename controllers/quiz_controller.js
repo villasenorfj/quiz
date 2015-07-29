@@ -90,3 +90,39 @@ exports.create = function(req, res, next) {
   )
   .catch(function(error) { next(error);});
 };
+
+// GET /quizes/:id/edit
+exports.edit = function(req, res, next) {
+  var quiz = req.quiz;  // req.quiz: autoload de instancia de quiz
+
+  res.render('quizes/edit', {quiz: quiz, errors: []});
+};
+
+// PUT /quizes/:id
+exports.update = function(req, res, next) {
+  req.quiz.pregunta  = req.body.quiz.pregunta;
+  req.quiz.respuesta = req.body.quiz.respuesta;
+
+  req.quiz
+  .validate()
+  .then(
+    function(err){
+      if (err) {
+        res.render('quizes/edit', {quiz: req.quiz, errors: err.errors});
+      } else {
+        req.quiz     // save: guarda campos pregunta y respuesta en DB
+        .save( {fields: ["pregunta", "respuesta"]})
+        .then( 
+          function(){ 
+            res.redirect('/quizes'); // Redirección HTTP a lista de preguntas (URL relativo)
+          },
+          function(err) {
+            console.log('Error save '+err);
+            next(err);
+          }
+        );
+      }     
+    }
+  )
+  .catch(function(error) { next(error);});
+};
