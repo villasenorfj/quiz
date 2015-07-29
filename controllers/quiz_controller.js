@@ -24,7 +24,7 @@ exports.load = function(req, res, next, quizId) {
 exports.index = function(req, res) {
   var busqueda = { order: "pregunta ASC" };
   if (req.query.search)
-    busqueda.where = {pregunta: {$like: '%'+req.query.search+'%'}};
+    busqueda.where = {pregunta: {$like: '%'+req.query.search.replace(' ', '%')+'%'}};
 
   models.Quiz.findAll(busqueda).then(
     function(quizes) {
