@@ -29,7 +29,7 @@ exports.index = function(req, res, next) {
   models.Quiz.findAll(busqueda)
   .then(
     function(quizes) {
-      res.render('quizes/index', { "quizes": quizes});
+      res.render('quizes/index', { "quizes": quizes, errors: [] });
     },
     function(err) {
       console.log('Error findAll '+err);
@@ -41,7 +41,7 @@ exports.index = function(req, res, next) {
 
 // GET /quizes/:quizId
 exports.show = function(req, res, next) {
-  res.render('quizes/show', { "quiz": req.quiz });
+  res.render('quizes/show', { "quiz": req.quiz, errors: [] });
 };
 
 // GET /quizes/:quizId/answer
@@ -50,7 +50,7 @@ exports.answer = function(req, res, next) {
   if (req.query.respuesta === req.quiz.respuesta) {
     respuesta ='Correcto';
   }
-  res.render('quizes/answer', { "quiz": req.quiz, "respuesta": respuesta});
+  res.render('quizes/answer', { "quiz": req.quiz, "respuesta": respuesta, errors: [] });
 };
 
 // GET /quizes/new
@@ -59,7 +59,7 @@ exports.new = function(req, res, next) {
     {pregunta: "Pregunta", respuesta: "Respuesta"}
   );
 
-  res.render('quizes/new', {quiz: quiz});
+  res.render('quizes/new', {quiz: quiz, errors: [] });
 };
 
 // POST /quizes/create
@@ -67,14 +67,25 @@ exports.create = function(req, res, next) {
   var quiz = models.Quiz.build( req.body.quiz );
 
   // guarda en DB los campos pregunta y respuesta de quiz
-  quiz.save({fields: ["pregunta", "respuesta"]})
+  quiz
+  .validate()
   .then(
-    function(){
-      res.redirect('/quizes');  // res.redirect: Redirección HTTP a lista de preguntas
-    },
     function(err) {
-      console.log('Error save '+err);
-      next(err);
+      if (err) {
+        res.render('quizes/new', {quiz: quiz, errors: err.errors});
+      }else {
+        quiz
+        .save({fields: ["pregunta", "respuesta"]})
+        .then(
+          function(){
+            res.redirect('/quizes');  // res.redirect: Redirección HTTP a lista de preguntas
+          },
+          function(err) {
+            console.log('Error save '+err);
+            next(err);
+          }
+        );
+      }
     }
   )
   .catch(function(error) { next(error);});
