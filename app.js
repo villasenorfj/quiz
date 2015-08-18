@@ -27,6 +27,22 @@ app.use(session());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Autologout
+app.use(function(req, res, next) {
+  // Solo si el usuario esta logado
+  if (req.session.user) {
+    var timeAct = (new Date()).getTime();
+    if (req.session.lastAccess) {
+      var timePass = timeAct - req.session.lastAccess;
+      if (timePass > 120000) { // mas de 2 minutos
+        delete req.session.user;
+      }
+    }
+    req.session.lastAccess = timeAct;
+  }
+  next();
+});
+
 // Helpers dinamicos:
 app.use(function(req, res, next) {
   // guardar path en session.redir para despues de login
